@@ -1,0 +1,99 @@
+# KTC AIWA 2K SA-21V2 (brand KTC / AIWA, device stanford, board mt5867)
+# Google TV 14 (API 34), firmware UKNV.260602.001, security patch 2026-06-02.
+# MediaTek mt5867, Android TV. Adb over TCP worked on a high port (43175);
+# the address changed between sessions, so read it from the TV each time.
+#
+# Apply:   TV_HOST=<tv ip> TV_PORT=<port> tools/disable.sh examples/ktc-stanford-sa-21v2/debloat.txt
+# Dock:    TV_HOST=<tv ip> TV_PORT=<port> tools/theme.sh examples/ktc-stanford-sa-21v2
+# Undo:    TV_HOST=<tv ip> TV_PORT=<port> tools/restore.sh examples/ktc-stanford-sa-21v2/debloat.txt
+# Everything is DISABLED, not uninstalled.
+#
+# --- State found on the set ---
+#
+# Packages already disabled when the set was received (enabled=3, DISABLED_USER).
+# They shipped that way or had been disabled before this session:
+#   com.google.android.tvlauncher          stock Google TV launcher
+#   com.google.android.tungsten.setupwraith  first-run wizard
+#   com.google.android.tv.remote.service   (companion app, harmless)
+#   com.mediatek.wwtv.tvcenter             Live TV  <-- see KEEP below
+#   com.mediatek.tvinput                   (input service)
+#   tv.anoki.acr.anokiacroptin            content recognition
+#   flar2.homebutton, fusion.android.tv.demo, com.alphainventor.filemanager,
+#   com.amazon.amazonvideo.livingroom, com.netflix.ninja
+#
+# Disabled in this session, after the new launcher was installed and set as Home:
+#   me.efesser.flauncher        the previous Home (FLauncher)
+#   com.mediatek.wwtv.mediaplayer  the MultiMediaPlayer app
+#   com.mediatek.androidbox         the Wi-Fi Display / WFDSinkTest app
+#
+# --- KEEP, even though some names look like bloat ---
+# - com.mediatek.wwtv.tvcenter: Live TV. Do not disable unless you never watch it.
+# - com.google.android.gms, com.android.vending: Play Services and Play Store.
+# - com.homwee.* (firmware update, factory, picture, remote pairing) if present.
+# - Streaming apps: Netflix, YouTube, Prime Video, Globoplay, Disney+, Max.
+#
+# --- Quirks on this firmware ---
+# - Home claimants before the swap: me.efesser.flauncher/.MainActivity (the default),
+#   then com.android.tv.settings/.system.FallbackHome. Only two, no setup wizard
+#   claiming Home, because setupwraith was already disabled on this set.
+#   Once setupwraith is enabled, Home can land on its RecoveryActivity and
+#   crash-loop system_server (see the AIWA example in this repo).
+# - "cmd package set-home-activity --user 0 <pkg>/<activity>" works on this set
+#   and does not need the user to pick from a chooser dialog.
+# - The screensaver is com.google.android.backdrop/.Backdrop. It is a DreamService
+#   with NO settings activity ("cmd package query-activities" -> "No activities
+#   found"), so it cannot be pointed at the user's Google Photos. Google Photos
+#   is not installed on this set either. For photo slideshows you need a
+#   third-party Dream app, chosen in Settings > Device Preferences > Screen saver.
+# - The MultiMediaPlayer app is com.mediatek.wwtv.mediaplayer, apk in
+#   /system_ext/priv-app/MultiMediaPlayerKtc/. Its main activity is
+#   com.mediatek.wwtv.mediaplayer.mmp.MediaMainActivity.
+# - The Wi-Fi Display app is com.mediatek.androidbox, apk in
+#   /system_ext/app/WFDSinkTest/. The name is generic: on the AIWA-ai-pont-sa
+#   set in examples/aiwa-ai-pont-sa/ this same package is a KEEP (remote pairing,
+#   inputs). Always check the apk path before disabling it, not just the name.
+# - Remote ADB port is not 5555 on this set. "adb connect <ip> <port>" worked on
+#   43175; the port changed between sessions. Check Settings > Network, or run
+#   "adb mdns services" if the TV offers wireless debugging pairing.
+# - If "adb connect" says "No route to host" but the TCP port is open
+#   (test with bash's /dev/tcp), the adb server holds a stale route:
+#   "adb kill-server && adb start-server" then connect again.
+#
+# Verified on this set:
+# - The new launcher (com.gathin.tvhome, v2.4) starts and answers the HOME key.
+# - Home resolves to com.gathin.tvhome/.MainActivity.
+# - No entries for gathin in the crash buffer.
+
+# Ambient screensaver (Google Backdrop). Only disable if you set the
+# launcher's own Clock dream as the screensaver instead.
+# com.google.android.backdrop
+
+# Partner auto-installs, feedback and content recognition
+com.google.android.partnersetup
+com.android.tv.feedbackconsent
+com.google.android.feedback
+tv.anoki.acr.anokiacroptin
+
+# Vendor store, help and app updater
+# com.homwee.store
+# com.homwee.help
+# com.homwee.upgrade
+# com.homwee.multiscreenshare
+# com.homwee.mmp.screenshare
+
+# Preloaded apps
+com.google.android.play.games
+com.google.android.youtube.tvmusic
+com.google.android.syncadapters.calendar
+
+# Personal choice
+# com.google.android.katniss            microphone / Assistant
+# com.google.android.apps.mediashell    Chromecast built-in
+
+# --- Disabled by the owner's choice in this session ---
+# The MultiMediaPlayer app.
+com.mediatek.wwtv.mediaplayer
+# The Wi-Fi Display (WFDSinkTest) app. Re-enable to mirror the screen.
+com.mediatek.androidbox
+# The previous launcher, FLauncher. The CleanYourTV launcher replaced it.
+me.efesser.flauncher

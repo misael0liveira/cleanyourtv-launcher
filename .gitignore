@@ -1,0 +1,19 @@
+# Arquivos temporários
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Diretórios de build
+build/
+.gradle/
+*.swp
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Sistema
+.cache/
+__pycache__/
